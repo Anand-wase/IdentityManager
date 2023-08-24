@@ -4,6 +4,8 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Cqrs.Hosts;
+using IdentityManager.Service;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,7 +20,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
     options.Lockout.MaxFailedAccessAttempts = 5;
     options.Lockout.AllowedForNewUsers = true;
 }).AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
-
+builder.Services.AddTransient<IEmailSender, MailJetEmailSender>();
 //builder.Services.Configure<IdentityOptions>(options =>
 //{
 //    // Default Lockout settings.
