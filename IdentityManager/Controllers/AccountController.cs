@@ -42,6 +42,26 @@ namespace IdentityManager.Controllers
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
+                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    var callbackurl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: HttpContext.Request.Scheme);
+                    var emailId = model.Email;
+                    string fromMail = "jayarambande01@gmail.com";
+                    string fromPassword = "pfvrbgxmtqbtqjpy";
+                    var s = "Please confirm your account by clicking here: <a href=\"" + callbackurl + "\">link</a>";
+                    MailMessage message = new MailMessage();
+                    message.From = new MailAddress(fromMail);
+                    message.Subject = "Confirm your account - Identity Manager";
+                    //message.To.Add(new MailAddress("198w1a0407@vrsec.ac.in"));
+                    message.To.Add(new MailAddress(emailId));
+                    message.Body = s;
+                    message.IsBodyHtml = true;
+                    var smtpClient = new SmtpClient("smtp.gmail.com")
+                    {
+                        Port = 587,
+                        Credentials = new NetworkCredential(fromMail, fromPassword),
+                        EnableSsl = true,
+                    };
+                    smtpClient.Send(message);
                     await _signInManager.SignInAsync(user, isPersistent: false);
                     return LocalRedirect(returnurl);
                 }
@@ -177,11 +197,26 @@ namespace IdentityManager.Controllers
             }
             return View();
         }
-
         [HttpGet]
         public IActionResult ResetPasswordConfirmation()
         {
             return View();
+        }
+        [HttpGet]
+        public async Task<IActionResult> ConfirmEmail(string userId, string code)
+        {
+            if (userId == null || code == null)
+            {
+                return View("Error");
+            }
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return View("Error");
+            }
+            var result = await _userManager.ConfirmEmailAsync(user, code);
+            return View(result.Succeeded ? "ConfirmEmail" : "Error");
+
         }
         private void AddErrors(IdentityResult result)
         {
