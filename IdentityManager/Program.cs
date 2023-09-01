@@ -6,38 +6,34 @@ using Microsoft.EntityFrameworkCore;
 using Cqrs.Hosts;
 using IdentityManager.Service;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection")));
-builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders().AddDefaultUI();
+builder.Services.Configure<IdentityOptions>(opt =>
 {
-    options.Password.RequiredLength = 5;
-    options.Password.RequireLowercase = true;
-    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromSeconds(5);
-    options.Lockout.MaxFailedAccessAttempts = 5;
-    options.Lockout.AllowedForNewUsers = true;
-    options.SignIn.RequireConfirmedAccount = true;
-
-}).AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
+    opt.Password.RequiredLength = 5;
+    opt.Password.RequireLowercase = true;
+    opt.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromSeconds(5);
+    opt.Lockout.MaxFailedAccessAttempts = 5;
+    opt.Lockout.AllowedForNewUsers = true;
+    opt.SignIn.RequireConfirmedAccount = true;
+});
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = new PathString("/Account/Login");
+    //other properties
+});
 builder.Services.ConfigureApplicationCookie(opt =>
 {
     opt.AccessDeniedPath = new Microsoft.AspNetCore.Http.PathString("/Home/Accessdenied");
 });
 
 builder.Services.AddTransient<IEmailSender, MailJetEmailSender>();
-//builder.Services.Configure<IdentityOptions>(options =>
-//{
-//    // Default Lockout settings.
-//    options.Password.RequiredLength = 5;
-//    options.Password.RequireLowercase = true;
-//    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromSeconds(5);
-//    options.Lockout.MaxFailedAccessAttempts = 5;
-//    options.Lockout.AllowedForNewUsers = true;
-//});
-
 
 var app = builder.Build();
 
