@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using IdentityManager.Authorize;
 using IdentityManager.Data;
 using IdentityManager.Models;
 using Microsoft.AspNetCore.Identity;
@@ -14,7 +15,6 @@ namespace IdentityManager.Controllers
     {
         private readonly ApplicationDbContext _db;
         private readonly UserManager<IdentityUser> _userManager;
-
         public UserController(ApplicationDbContext db, UserManager<IdentityUser> userManager)
         {
             _db = db;
@@ -26,6 +26,10 @@ namespace IdentityManager.Controllers
             var userList = _db.ApplicationUser.ToList();
             var userRole = _db.UserRoles.ToList();
             var roles = _db.Roles.ToList();
+            int d = 0;
+            if (userList.Count() > 0)
+            d = (DateTime.Now - userList[0].DateCreated).Value.Days;
+            Console.WriteLine(d);
             foreach (var user in userList)
             {
                 var role = userRole.FirstOrDefault(u => u.UserId == user.Id);

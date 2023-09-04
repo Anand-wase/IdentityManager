@@ -20,7 +20,11 @@
         <br />
         @if (User.IsInRole("Admin"))
         {
-            <h2>Your role is - Admin</h2>
+             <h2>Your role is - Admin</h2>
+        }
+        else if(User.IsInRole("SuperAdmin"))
+        {
+            <h2>Your role is - SuperAdmin</h2>
         }
         else
         {
